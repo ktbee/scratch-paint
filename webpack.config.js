@@ -17,7 +17,7 @@ const base = {
         rules: [{
             test: /\.jsx?$/,
             loader: 'babel-loader',
-            include: path.resolve(__dirname, 'src'),
+            include: [path.resolve(__dirname, 'src'), path.resolve(__dirname, 'test/integration/src')],
             options: {
                 plugins: ['transform-object-rest-spread'],
                 presets: [['env', {browsers: ['last 3 versions', 'Safari >= 8', 'iOS >= 8']}], 'react']
@@ -116,5 +116,35 @@ module.exports = [
             filename: '[name].js',
             libraryTarget: 'commonjs2'
         }
-    })
+    }),
+    // Web-compatible
+    Object.assign({}, base, {
+        target: 'web',
+        entry: {
+            'scratch-paint': './src/index.js',
+            'scratch-paint.min': './src/index.js'
+        },
+        output: {
+            library: 'ScratchPaint',
+            libraryTarget: 'umd',
+            path: path.resolve('dist', 'web'),
+            filename: '[name].js'
+        }
+    }),
+    // For integration testing
+    defaultsDeep({}, base, {
+        entry: {
+            integrationTest: './test/integration/src/test.jsx'
+        },
+        output: {
+            path: path.resolve(__dirname, 'test/integration'),
+            filename: '[name].js'
+        },
+        plugins: base.plugins.concat([
+            new HtmlWebpackPlugin({
+                template: './test/integration/src/index.ejs',
+                title: 'Scratch 3.0 Paint Editor Test'
+            })
+        ])
+    }),
 ];
